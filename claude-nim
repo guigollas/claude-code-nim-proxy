@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Wrapper script to run Claude Code with the Nim proxy configuration
+# Sources the environment file and passes all arguments to claude
+
+ENV_FILE="$HOME/.claude-code-nim.env"
+
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "Erro: arquivo de ambiente não encontrado:"
+  echo "$ENV_FILE"
+  echo ""
+  echo "Copie o arquivo de exemplo:"
+  echo "  cp .claude-code-nim.env.example ~/.claude-code-nim.env"
+  exit 1
+fi
+
+source "$ENV_FILE"
+claude "$@"

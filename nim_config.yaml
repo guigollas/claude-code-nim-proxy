@@ -1,0 +1,61 @@
+model_list:
+  # Aliases que o Claude Code vai usar diretamente
+
+  - model_name: sonnet
+    litellm_params:
+      model: nvidia_nim/z-ai/glm-5.1
+      api_key: os.environ/NVIDIA_NIM_API_KEY
+      api_base: https://integrate.api.nvidia.com/v1
+
+  - model_name: fable
+    litellm_params:
+      model: nvidia_nim/deepseek-ai/deepseek-v4-pro
+      api_key: os.environ/NVIDIA_NIM_API_KEY
+      api_base: https://integrate.api.nvidia.com/v1
+
+  - model_name: opus
+    litellm_params:
+      model: nvidia_nim/qwen/qwen3.5-397b-a17b
+      api_key: os.environ/NVIDIA_NIM_API_KEY
+      api_base: https://integrate.api.nvidia.com/v1
+
+  - model_name: haiku
+    litellm_params:
+      model: nvidia_nim/deepseek-ai/deepseek-v4-flash
+      api_key: os.environ/NVIDIA_NIM_API_KEY
+      api_base: https://integrate.api.nvidia.com/v1
+
+  # Nomes explícitos também ficam disponíveis
+
+  - model_name: glm-5-1
+    litellm_params:
+      model: nvidia_nim/z-ai/glm-5.1
+      api_key: os.environ/NVIDIA_NIM_API_KEY
+      api_base: https://integrate.api.nvidia.com/v1
+
+  - model_name: deepseek-v4-pro
+    litellm_params:
+      model: nvidia_nim/deepseek-ai/deepseek-v4-pro
+      api_key: os.environ/NVIDIA_NIM_API_KEY
+      api_base: https://integrate.api.nvidia.com/v1
+
+  - model_name: deepseek-v4-flash
+    litellm_params:
+      model: nvidia_nim/deepseek-ai/deepseek-v4-flash
+      api_key: os.environ/NVIDIA_NIM_API_KEY
+      api_base: https://integrate.api.nvidia.com/v1
+
+  - model_name: qwen-3-5-397b
+    litellm_params:
+      model: nvidia_nim/qwen/qwen3.5-397b-a17b
+      api_key: os.environ/NVIDIA_NIM_API_KEY
+      api_base: https://integrate.api.nvidia.com/v1
+
+litellm_settings:
+  drop_params: true
+  set_verbose: false
+  num_retries: 0
+  request_timeout: 300
+
+general_settings:
+  master_key: sk-local-jarvis

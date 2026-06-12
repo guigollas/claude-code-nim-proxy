@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ENV_FILE="$HOME/.config/nim-proxy/nvidia.env"
+PROXY_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_FILE="$PROXY_DIR/nim_config.yaml"
+PORT="4000"
+
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "Erro: arquivo de chave não encontrado:"
+  echo "$ENV_FILE"
+  exit 1
+fi
+
+source "$ENV_FILE"
+
+# Compatibilidade: aceita NVIDIA_API_KEY ou NVIDIA_NIM_API_KEY
+if [[ -z "${NVIDIA_NIM_API_KEY:-}" && -n "${NVIDIA_API_KEY:-}" ]]; then
+  export NVIDIA_NIM_API_KEY="$NVIDIA_API_KEY"
+fi
+
+if [[ -z "${NVIDIA_API_KEY:-}" && -n "${NVIDIA_NIM_API_KEY:-}" ]]; then
+  export NVIDIA_API_KEY="$NVIDIA_NIM_API_KEY"
+fi
+
+if [[ -z "${NVIDIA_NIM_API_KEY:-}" ]]; then
+  echo "Erro: NVIDIA_NIM_API_KEY não definida em:"
+  echo "$ENV_FILE"
+  echo ""
+  echo "Coloque no arquivo:"
+  echo 'export NVIDIA_NIM_API_KEY="sua-chave-da-nvidia"'
+  exit 1
+fi
+
+if [[ ! -f "$CONFIG_FILE" ]]; then
+  echo "Erro: nim_config.yaml não encontrado em:"
+  echo "$CONFIG_FILE"
+  exit 1
+fi
+
+echo "Iniciando LiteLLM/NVIDIA proxy..."
+echo "Config: $CONFIG_FILE"
+echo "Porta: http://localhost:$PORT"
+echo "Credencial NVIDIA_NIM_API_KEY carregada."
+echo ""
+
+if [[ -x "$PROXY_DIR/.venv/bin/litellm" ]]; then
+  exec "$PROXY_DIR/.venv/bin/litellm" --config "$CONFIG_FILE" --port "$PORT"
+elif command -v litellm >/dev/null 2>&1; then
+  exec litellm --config "$CONFIG_FILE" --port "$PORT"
+else
+  echo "Erro: LiteLLM não encontrado."
+  echo "Esperado em: $PROXY_DIR/.venv/bin/litellm"
+  exit 1
+fi

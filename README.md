@@ -6,12 +6,13 @@ A LiteLLM-based proxy that routes Claude Code model requests through NVIDIA NIM 
 
 This proxy intercepts Claude Code's API calls and transparently maps model aliases to NVIDIA NIM endpoints:
 
-| Claude Alias | Actual Model | Provider |
-|-------------|--------------|----------|
-| `sonnet` | `z-ai/glm-5.1` | NVIDIA NIM |
-| `fable` | `deepseek-ai/deepseek-v4-pro` | NVIDIA NIM |
-| `opus` | `qwen/qwen3.5-397b-a17b` | NVIDIA NIM |
-| `haiku` | `deepseek-ai/deepseek-v4-flash` | NVIDIA NIM |
+| Claude Alias | Actual Model | Provider | Use Case |
+|-------------|--------------|----------|----------|
+| `quick` | `meta/llama-3.1-8b-instruct` | NVIDIA NIM | Fast responses, simple edits |
+| `sonnet` | `z-ai/glm-5.1` | NVIDIA NIM | Default coding tasks |
+| `fable` | `deepseek-ai/deepseek-v4-pro` | NVIDIA NIM | Complex reasoning |
+| `opus` | `qwen/qwen3.5-397b-a17b` | NVIDIA NIM | Heavy analysis |
+| `haiku` | `deepseek-ai/deepseek-v4-flash` | NVIDIA NIM | Lightweight tasks |
 
 ## Architecture
 
@@ -22,6 +23,7 @@ This proxy intercepts Claude Code's API calls and transparently maps model alias
 └─────────────┘     └──────────────┘     └─────────────────┘
                           │
                      Model Mapping:
+                     quick  → llama-3.1-8b-instruct
                      sonnet → glm-5.1
                      fable  → deepseek-v4-pro
                      opus   → qwen3.5-397b
@@ -155,11 +157,14 @@ claude-nim
 Inside Claude Code, use the `/model` command:
 
 ```
-/model sonnet   # Uses GLM 5.1
-/model fable    # Uses DeepSeek V4 Pro
-/model opus     # Uses Qwen 3.5 397B
-/model haiku    # Uses DeepSeek V4 Flash
+/model quick   # Uses Llama 3.1 8B (fast)
+/model sonnet  # Uses GLM 5.1
+/model fable   # Uses DeepSeek V4 Pro
+/model opus    # Uses Qwen 3.5 397B
+/model haiku   # Uses DeepSeek V4 Flash
 ```
+
+The custom model option (`quick`) also appears as "Quick via NVIDIA NIM" in the model picker menu.
 
 ## Configuration Reference
 
@@ -191,6 +196,7 @@ general_settings:
 | `ANTHROPIC_BASE_URL` | `~/.claude-code-nim.env` | Points Claude to local proxy |
 | `ANTHROPIC_AUTH_TOKEN` | `~/.claude-code-nim.env` | Auth token (must match `master_key`) |
 | `ANTHROPIC_MODEL` | `~/.claude-code-nim.env` | Default model alias |
+| `ANTHROPIC_CUSTOM_MODEL_OPTION` | `~/.claude-code-nim.env` | Extra model option (appears in `/model` menu) |
 
 ## Troubleshooting
 

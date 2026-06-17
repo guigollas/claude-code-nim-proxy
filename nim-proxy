@@ -2,8 +2,14 @@
 set -euo pipefail
 
 ENV_FILE="$HOME/.config/nim-proxy/nvidia.env"
-PROXY_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_FILE="$PROXY_DIR/nim_config.yaml"
+PROXY_DIR="$HOME/70_RUNTIME_LOCAL/AI/Agents/claude-code-nim-proxy"
+STACK="${1:-default}"
+
+if [[ "$STACK" == "default" ]]; then
+  CONFIG_FILE="$PROXY_DIR/nim_config.yaml"
+else
+  CONFIG_FILE="$PROXY_DIR/nim_config.$STACK.yaml"
+fi
 PORT="4000"
 
 if [[ ! -f "$ENV_FILE" ]]; then
@@ -38,18 +44,38 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
   exit 1
 fi
 
-echo "Iniciando LiteLLM/NVIDIA proxy..."
-echo "Config: $CONFIG_FILE"
-echo "Porta: http://localhost:$PORT"
-echo "Credencial NVIDIA_NIM_API_KEY carregada."
+echo "Iniciando LiteLLM real em http://127.0.0.1:4001 ..."
+echo "Iniciando NIM rate guard em http://127.0.0.1:4000 ..."
+echo "Claude Code deve continuar apontando para http://localhost:4000"
 echo ""
 
+cd "$PROXY_DIR"
+
+export NIM_GUARD_UPSTREAM="http://127.0.0.1:4001"
+export NIM_GUARD_PORT="4000"
+export NIM_GUARD_429_COOLDOWN="65"
+export NIM_GUARD_MIN_GAP="1.7"
+export NIM_GUARD_MAX_429_RETRIES="1"
+
 if [[ -x "$PROXY_DIR/.venv/bin/litellm" ]]; then
-  exec "$PROXY_DIR/.venv/bin/litellm" --config "$CONFIG_FILE" --port "$PORT"
+  "$PROXY_DIR/.venv/bin/litellm" --config "$CONFIG_FILE" --host 127.0.0.1 --port 4001 &
 elif command -v litellm >/dev/null 2>&1; then
-  exec litellm --config "$CONFIG_FILE" --port "$PORT"
+  litellm --config "$CONFIG_FILE" --host 127.0.0.1 --port 4001 &
 else
   echo "Erro: LiteLLM não encontrado."
-  echo "Esperado em: $PROXY_DIR/.venv/bin/litellm"
   exit 1
 fi
+
+LITELLM_PID=$!
+
+cleanup() {
+  echo ""
+  echo "Encerrando LiteLLM PID $LITELLM_PID..."
+  kill "$LITELLM_PID" 2>/dev/null || true
+}
+
+trap cleanup EXIT INT TERM
+
+sleep 3
+
+exec "$PROXY_DIR/.venv/bin/python" "$PROXY_DIR/nim_rate_guard.py"

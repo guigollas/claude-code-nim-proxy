@@ -64,5 +64,14 @@ litellm_settings:
   num_retries: 0
   request_timeout: 300
 
+router_settings:
+  retry_policy: {
+    "RateLimitErrorRetries": 0,
+    "TimeoutErrorRetries": 2,
+    "InternalServerErrorRetries": 2,
+    "BadRequestErrorRetries": 0,
+    "AuthenticationErrorRetries": 0
+  }
+
 general_settings:
   master_key: sk-local-jarvis
